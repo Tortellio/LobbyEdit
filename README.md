@@ -14,6 +14,7 @@ Edit your Unturned server lobby description and some more feature
 
 ##### Mode and Perspective
 > Mode: "easy", "normal", "hard"
+
 > Perspective: "first", "third", "vehicle", "both"
 
 ### Support
