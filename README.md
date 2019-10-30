@@ -5,12 +5,12 @@ Edit Unturned Server Lobby Description
 Edit your Unturned server lobby description and some more feature
 
 ### Features
-- Hide server Rocket
+- Show/Hide server Rocket
 - Hide/Edit server plugins
 - Hide/Edit server workshop mods
 - Hide/Edit server configs
 - Edit server game mode
-- Force fake vanilla server
+- Fakes Vanilla/Rocket server
 
 ##### Mode and Perspective
 > Mode: "easy", "normal", "hard"
