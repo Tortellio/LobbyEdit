@@ -6,12 +6,12 @@ namespace Tortellio.LobbyEdit
     {
         public bool PluginEnabled;
         public bool HidePlugins;
-        public bool MessPlugins;
+        public bool EditPlugins;
         public string[] Plugins;
         public bool IsVanilla;
         public bool InvisibleRocket;
         public bool HideWorkshop;
-        public bool MessWorkshop;
+        public bool EditWorkshop;
         public string[] Workshop;
         public bool HideConfig;
         public bool IsPVP;
@@ -28,7 +28,7 @@ namespace Tortellio.LobbyEdit
             IsVanilla = false;
             InvisibleRocket = false;
             HidePlugins = false;
-            MessPlugins = true;
+            EditPlugins = true;
             Plugins = new string[]
             {
                 "FEATURES:",
@@ -36,7 +36,7 @@ namespace Tortellio.LobbyEdit
                 "HOME"
             };
             HideWorkshop = false;
-            MessWorkshop = true;
+            EditWorkshop = true;
             Workshop = new string[]
             {
                 "0"

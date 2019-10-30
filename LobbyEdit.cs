@@ -64,7 +64,7 @@ namespace Tortellio.LobbyEdit
 
             if (!Configuration.Instance.HidePlugins)
             {
-                if (Configuration.Instance.MessPlugins)
+                if (Configuration.Instance.EditPlugins)
                     SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", Configuration.Instance.Plugins));
                 else
                     SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", R.Plugins.GetPlugins().Select(p => p.Name).ToArray()));
@@ -84,7 +84,7 @@ namespace Tortellio.LobbyEdit
             {
                 if (!Configuration.Instance.InvisibleRocket)
                     SteamGameServer.SetBotPlayerCount(1);
-                if (!Configuration.Instance.HidePlugins && !Configuration.Instance.MessPlugins)
+                if (!Configuration.Instance.HidePlugins && !Configuration.Instance.EditPlugins)
                     SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", R.Plugins.GetPlugins().Select(p => p.Name).ToArray()));
                 string version = ModuleHook.modules.Find(a => a.config.Name == "Rocket.Unturned")?.config.Version ?? "0.0.0.69";
                 SteamGameServer.SetKeyValue("rocket", version);
@@ -97,7 +97,7 @@ namespace Tortellio.LobbyEdit
                 workshop = false;
                 SteamGameServer.SetKeyValue("Browser_Workshop_Count", "0");
             }
-            else if (Configuration.Instance.MessWorkshop)
+            else if (Configuration.Instance.EditWorkshop)
             {
                 workshop = true;
                 string txt = String.Join(",", Configuration.Instance.Workshop);
