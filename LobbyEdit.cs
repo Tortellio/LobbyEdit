@@ -23,7 +23,9 @@ namespace Tortellio.LobbyEdit
                 Logger.Log(PluginName + PluginVersion, ConsoleColor.Yellow);
                 Logger.Log("Made by Tortellio", ConsoleColor.Yellow);
                 if (Level.isLoaded)
-                    ConfigureLobby();
+                {
+                    EditLobby();
+                }
                 Level.onPostLevelLoaded += OnPostLevelLoaded;
             }
             else
@@ -50,9 +52,9 @@ namespace Tortellio.LobbyEdit
             .SelectMany(x => x.FieldType.GetFields().Select(y => y.GetValue(x.GetValue(Provider.modeConfigData))))
             .Select(x => x is bool v ? v ? "T" : "F" : (String.Empty + x)).ToArray()).Length - 1) / 120 + 1;
 
-        public void OnPostLevelLoaded(int a) => ConfigureLobby();
+        public void OnPostLevelLoaded(int a) => EditLobby();
 
-        public void ConfigureLobby()
+        public void EditLobby()
         {
             string mode;
             string perspective;
@@ -60,7 +62,9 @@ namespace Tortellio.LobbyEdit
 
             #region Plugins
             if (Configuration.Instance.InvisibleRocket)
-                SteamGameServer.SetBotPlayerCount(0); // Bypasses unturned's filter for rocket <3
+            {
+                SteamGameServer.SetBotPlayerCount(0);
+            }
 
             if (!Configuration.Instance.HidePlugins)
             {
@@ -83,7 +87,9 @@ namespace Tortellio.LobbyEdit
             else
             {
                 if (!Configuration.Instance.InvisibleRocket)
+                {
                     SteamGameServer.SetBotPlayerCount(1);
+                }
                 if (!Configuration.Instance.HidePlugins && !Configuration.Instance.EditPlugins)
                     SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", R.Plugins.GetPlugins().Select(p => p.Name).ToArray()));
                 string version = ModuleHook.modules.Find(a => a.config.Name == "Rocket.Unturned")?.config.Version ?? "0.0.0.69";
