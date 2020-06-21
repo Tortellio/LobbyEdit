@@ -13,40 +13,32 @@ namespace Tortellio.LobbyEdit
     {
         public static LobbyEdit Instance;
         public static string PluginName = "LobbyEdit";
-        public static string PluginVersion = "1.0.0";
+        public static string PluginVersion = "1.0.2";
+
         protected override void Load()
         {
-            if (Configuration.Instance.PluginEnabled)
+            Instance = this;
+            Logger.Log("LobbyEdit has been loaded!", ConsoleColor.Yellow);
+            Logger.Log(PluginName + PluginVersion, ConsoleColor.Yellow);
+            Logger.Log("Made by Tortellio", ConsoleColor.Yellow);
+            if (Level.isLoaded)
             {
-                Instance = this;
-                Logger.Log("LobbyEdit has been loaded!");
-                Logger.Log(PluginName + PluginVersion, ConsoleColor.Yellow);
-                Logger.Log("Made by Tortellio", ConsoleColor.Yellow);
-                if (Level.isLoaded)
-                {
-                    EditLobby();
-                }
-                Level.onPostLevelLoaded += OnPostLevelLoaded;
+                EditLobby();
             }
-            else
-            {
-                Logger.Log("LobbyEdit has been loaded!");
-                Logger.Log(PluginName + PluginVersion, ConsoleColor.Yellow);
-                Logger.Log("Made by Tortellio", ConsoleColor.Yellow);
-                Logger.Log("LobbyEdit is disabled in Configuration", ConsoleColor.Red);
-                UnloadPlugin();
-            }
+            Level.onPostLevelLoaded += OnPostLevelLoaded;
         }
+
         protected override void Unload()
         {
             Instance = null;
-            Logger.Log("LobbyEdit has been unloaded!");
-            Logger.Log("Visit Tortellio Discord for more! https://discord.gg/pzQwsew");
+            Logger.Log("LobbyEdit has been unloaded!", ConsoleColor.Yellow);
+            Logger.Log("Visit Tortellio Discord for more! https://discord.gg/pzQwsew", ConsoleColor.Yellow);
             Level.onPostLevelLoaded -= OnPostLevelLoaded;
         }
 
         public static int GetWorkshopCount() =>
             (String.Join(",", Provider.getServerWorkshopFileIDs().Select(x => x.ToString()).ToArray()).Length - 1) / 120 + 1;
+
         public static int GetConfigurationCount() =>
             (String.Join(",", typeof(ModeConfigData).GetFields()
             .SelectMany(x => x.FieldType.GetFields().Select(y => y.GetValue(x.GetValue(Provider.modeConfigData))))
@@ -58,6 +50,7 @@ namespace Tortellio.LobbyEdit
         {
             string mode;
             string perspective;
+            string thumbnail;
             bool workshop = Provider.getServerWorkshopFileIDs().Count > 0;
 
             #region Plugins
@@ -163,6 +156,21 @@ namespace Tortellio.LobbyEdit
             }
             #endregion
 
+            #region Thumbnail
+            switch (Configuration.Instance.EditThumbnail)
+            {
+                case (true):
+                    thumbnail = Configuration.Instance.Thumbnail;
+                    break;
+                case (false):
+                    thumbnail = Provider.configData.Browser.Thumbnail;
+                    break;
+                default:
+                    thumbnail = Provider.configData.Browser.Thumbnail;
+                    break;
+            }
+            #endregion
+
             #region Configuration
             string tags = String.Concat(new string[]
             {
@@ -175,13 +183,10 @@ namespace Tortellio.LobbyEdit
                 perspective,
                 ",",
                 Configuration.Instance.HideWorkshop ? "WSn" : "WSy",
-                ",",
-                Configuration.Instance.IsGold ? "GLD" : "F2P",
-                ",",
-                Configuration.Instance.IsBattlEyeSecure ? "BEy" : "BEn",
-                ",<gm>",
-                Configuration.Instance.GameMode,
-                "</gm>",
+                ",", Configuration.Instance.IsGold ? "GLD" : "F2P",
+                ",", Configuration.Instance.IsBattlEyeSecure ? "BEy" : "BEn",
+                ",<gm>", Configuration.Instance.GameMode, "</gm>",
+                ",<tn>", thumbnail, "</tn>"
             });
             SteamGameServer.SetGameTags(tags);
             #endregion

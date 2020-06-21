@@ -4,7 +4,6 @@ namespace Tortellio.LobbyEdit
 {
     public class Config : IRocketPluginConfiguration
     {
-        public bool PluginEnabled;
         public bool HidePlugins;
         public bool EditPlugins;
         public string[] Plugins;
@@ -21,10 +20,11 @@ namespace Tortellio.LobbyEdit
         public string Perspective;
         public bool IsGold;
         public string GameMode;
+        public bool EditThumbnail;
+        public string Thumbnail;
 
         public void LoadDefaults()
         {
-            PluginEnabled = true;
             IsVanilla = false;
             InvisibleRocket = false;
             HidePlugins = false;
@@ -49,6 +49,8 @@ namespace Tortellio.LobbyEdit
             Perspective = "both";
             IsGold = false;
             GameMode = "Zombie Slayer";
+            EditThumbnail = false;
+            Thumbnail = "url.com";
         }
     }
 }
