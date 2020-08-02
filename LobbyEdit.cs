@@ -1,47 +1,70 @@
 ﻿using System;
-using System.Linq;
-using Rocket.Core;
-using Rocket.Core.Plugins;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using Cysharp.Threading.Tasks;
+using OpenMod.Unturned.Plugins;
+using OpenMod.API.Plugins;
 using SDG.Unturned;
-using SDG.Framework.Modules;
 using Steamworks;
-using Logger = Rocket.Core.Logging.Logger;
+using SDG.Framework.Modules;
+using NuGet.Protocol.Plugins;
+using System.Linq;
 
+[assembly: PluginMetadata("Tortellio.LobbyEdit", Author = "Tortellio", DisplayName = "LobbyEdit",
+    Website = "https://github.com/Tortellio/LobbyEdit")]
 namespace Tortellio.LobbyEdit
 {
-    public class LobbyEdit : RocketPlugin<Config>
+    public class LobbyEdit : OpenModUnturnedPlugin
     {
-        public LobbyEdit Instance;
-        public string PluginName = "LobbyEdit";
-        public string PluginVersion = "1.0.3";
-        protected override void Load()
+        private readonly IConfiguration m_Configuration;
+        private readonly IStringLocalizer m_StringLocalizer;
+        private readonly ILogger<LobbyEdit> m_Logger;
+        private readonly IPluginActivator m_PluginActivator;
+        public LobbyEdit(
+            IConfiguration configuration, 
+            IStringLocalizer stringLocalizer,
+            ILogger<LobbyEdit> logger,
+            IPluginActivator pluginActivator,
+            IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            Instance = this;
-            Logger.Log(PluginName + PluginVersion, ConsoleColor.Yellow);
-            Logger.Log("Made by Tortellio", ConsoleColor.Yellow);
-            if (Level.isLoaded) EditLobby();
+            m_Configuration = configuration;
+            m_StringLocalizer = stringLocalizer;
+            m_Logger = logger;
+            m_PluginActivator = pluginActivator;
+        }
+
+        protected override async UniTask OnLoadAsync()
+        {
+			await UniTask.SwitchToMainThread();
+
             Level.onPostLevelLoaded += OnPostLevelLoaded;
+            m_Logger.LogInformation("LobbyEdit by Tortellio has been loaded.");
+            if (Level.isLoaded)
+            {
+                m_Logger.LogInformation(m_StringLocalizer["PLUGIN_EVENTS:OVERRIDE_START"]);
+                EditLobby();
+                m_Logger.LogInformation(m_StringLocalizer["PLUGIN_EVENTS:OVERRIDE_STOP"]);
+            }
+            await UniTask.SwitchToThreadPool();
         }
-        protected override void Unload()
+
+        protected override async UniTask OnUnloadAsync()
         {
-            Instance = null;
-            Logger.Log("LobbyEdit has been unloaded!", ConsoleColor.Yellow);
-            Logger.Log("Visit Tortellio Discord for more! https://discord.gg/pzQwsew", ConsoleColor.Yellow);
+            await UniTask.SwitchToMainThread();
+
             Level.onPostLevelLoaded -= OnPostLevelLoaded;
+            m_Logger.LogInformation("LobbyEdit by Tortellio has been unloaded.");
         }
-        /*private int GetWorkshopCount()
+        private async void OnPostLevelLoaded(int level)
         {
-            return (string.Join(",", Provider.getServerWorkshopFileIDs().Select(x => x.ToString()).ToArray()).Length - 1) / 120 + 1;
-        }*/
-        private int GetConfigurationCount()
-        {
-            return (string.Join(",", typeof(ModeConfigData).GetFields()
-                .SelectMany(x => x.FieldType.GetFields().Select(y => y.GetValue(x.GetValue(Provider.modeConfigData))))
-                .Select(x => x is bool v ? v ? "T" : "F" : (string.Empty + x)).ToArray()).Length - 1) / 120 + 1;
-        }
-        private void OnPostLevelLoaded(int a)
-        {
+            await UniTask.SwitchToMainThread();
+
+            m_Logger.LogInformation(m_StringLocalizer["PLUGIN_EVENTS:OVERRIDE_START"]);
             EditLobby();
+            m_Logger.LogInformation(m_StringLocalizer["PLUGIN_EVENTS:OVERRIDE_STOP"]);
+
+            await UniTask.SwitchToThreadPool();
         }
         private void EditLobby()
         {
@@ -51,22 +74,22 @@ namespace Tortellio.LobbyEdit
             bool workshop = Provider.getServerWorkshopFileIDs().Count > 0;
 
             #region Plugins
-            if (Configuration.Instance.HideRocket)
+            if (m_Configuration.GetSection("Hide:Rocket").Get<bool>())
             {
                 SteamGameServer.SetBotPlayerCount(0);
             }
 
-            if (!Configuration.Instance.HidePlugins)
+            if (!m_Configuration.GetSection("Hide:Plugins").Get<bool>())
             {
-                if (Configuration.Instance.EditPlugins) { SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", Configuration.Instance.Plugins)); }
-                else { SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", R.Plugins.GetPlugins().Select(p => p.Name).ToArray())); }
+                if (m_Configuration.GetSection("Edit:Plugins").Get<bool>()) { SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", m_Configuration.GetSection("PluginsOverride").Get<string[]>())); }
+                else { SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", m_PluginActivator.ActivatedPlugins.ToList().Select(p => p.DisplayName).ToArray())); }
             }
             else
             {
                 SteamGameServer.SetKeyValue("rocketplugins", "");
             }
 
-            if (Configuration.Instance.IsVanilla)
+            if (m_Configuration.GetSection("GameTags:Vanilla").Get<bool>())
             {
                 SteamGameServer.SetBotPlayerCount(0);
                 SteamGameServer.SetKeyValue("rocketplugins", "");
@@ -74,17 +97,17 @@ namespace Tortellio.LobbyEdit
             }
             else
             {
-                if (!Configuration.Instance.HideRocket)
+                if (!m_Configuration.GetSection("Hide:Rocket").Get<bool>())
                 {
                     SteamGameServer.SetBotPlayerCount(1);
                 }
 
-                if (!Configuration.Instance.HidePlugins && !Configuration.Instance.EditPlugins)
+                if (!m_Configuration.GetSection("Hide:Plugins").Get<bool>() && !m_Configuration.GetSection("Edit:Plugins").Get<bool>())
                 {
-                    SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", R.Plugins.GetPlugins().Select(p => p.Name).ToArray()));
+                    SteamGameServer.SetKeyValue("rocketplugins", string.Join(",", m_PluginActivator.ActivatedPlugins.ToList().Select(p => p.DisplayName).ToArray()));
                 }
 
-                string version = ModuleHook.modules.Find(a => a.config.Name == "Rocket.Unturned")?.config.Version ?? "0.0.0.69";
+                string version = ModuleHook.modules.Find(a => a.config.Name == "Rocket.Unturned")?.config.Version ?? "4.9.3.3";
                 SteamGameServer.SetKeyValue("rocket", version);
             }
             #endregion
@@ -121,10 +144,10 @@ namespace Tortellio.LobbyEdit
             #endregion
 
             #region Configs
-            if (Configuration.Instance.HideConfig) { SteamGameServer.SetKeyValue("Browser_Config_Count", "0"); }
+            if (m_Configuration.GetSection("Hide:Config").Get<bool>()) { SteamGameServer.SetKeyValue("Browser_Config_Count", "0"); }
             else { SteamGameServer.SetKeyValue("Browser_Config_Count", GetConfigurationCount().ToString()); }
 
-            switch (Configuration.Instance.Mode.ToLower().Trim())
+            switch (m_Configuration["GameTags:Mode"].ToLower().Trim())
             {
                 case "easy":
                     mode = "EZY";
@@ -137,7 +160,7 @@ namespace Tortellio.LobbyEdit
                     break;
             }
 
-            switch (Configuration.Instance.Perspective.ToLower().Trim())
+            switch (m_Configuration["GameTags:Perspective"].ToLower().Trim())
             {
                 case "first":
                     perspective = "1Pp";
@@ -155,12 +178,12 @@ namespace Tortellio.LobbyEdit
             #endregion
 
             #region Thumbnail
-            if (!Configuration.Instance.HideThumbnail)
+            if (!m_Configuration.GetSection("Hide:Thumbnail").Get<bool>())
             {
-                switch (Configuration.Instance.EditThumbnail)
+                switch (m_Configuration.GetSection("Edit:Thumbnail").Get<bool>())
                 {
                     case true:
-                        thumbnail = Configuration.Instance.Thumbnail;
+                        thumbnail = m_Configuration["ThumbnailOverride"];
                         break;
                     case false:
                         thumbnail = Provider.configData.Browser.Thumbnail;
@@ -179,23 +202,29 @@ namespace Tortellio.LobbyEdit
             #region GameTags
             string tags = string.Concat(new string[]
             {
-                Configuration.Instance.IsPVP ? "PVP" : "PVE",
+                m_Configuration.GetSection("GameTags:PVP").Get<bool>() ? "PVP" : "PVE",
                 ",<gm>",
-                Configuration.Instance.GameMode, 
+                m_Configuration["GameTags:GameMode"],
                 "</gm>,",
-                Configuration.Instance.HasCheats ? "CHy" : "CHn",
+                m_Configuration.GetSection("GameTags:Cheats").Get<bool>() ? "CHy" : "CHn",
                 ",",
                 mode,
                 ",",
                 perspective,
                 ",",
                 workshop ? "WSy" : "WSn",
-                ",", Configuration.Instance.IsGold ? "GLD" : "F2P",
-                ",", Configuration.Instance.IsBattlEyeSecure ? "BEy" : "BEn",
+                ",", m_Configuration.GetSection("GameTags:Gold").Get<bool>() ? "GLD" : "F2P",
+                ",", m_Configuration.GetSection("GameTags:BattlEyeSecure").Get<bool>() ? "BEy" : "BEn",
                 ",<tn>", thumbnail, "</tn>"
             });
             SteamGameServer.SetGameTags(tags);
             #endregion
+        }
+        private int GetConfigurationCount()
+        {
+            return (string.Join(",", typeof(ModeConfigData).GetFields()
+                .SelectMany(x => x.FieldType.GetFields().Select(y => y.GetValue(x.GetValue(Provider.modeConfigData))))
+                .Select(x => x is bool v ? v ? "T" : "F" : (string.Empty + x)).ToArray()).Length - 1) / 120 + 1;
         }
     }
 }

@@ -1,0 +1,25 @@
+Edit:
+	Plugins: "true"
+	Thumbnail: "false"
+
+Hide:
+	Config: "true"
+	Plugins: "true"
+	Rocket: "false"
+	Thumbnail: "false"
+
+GameTags:
+	BattlEyeSecure: "true"
+	Cheats: "false"
+	GameMode: "Zombie Slayer"
+	Gold: "false"
+	Mode: "Normal"
+	Perspective: "Both"
+	PVP: "true"
+	Vanilla: "false"
+
+PluginsOverride:
+	"Server features:"
+	"MANY MANY PLUGINS!"
+
+ThumbnailOverride: "url.com"

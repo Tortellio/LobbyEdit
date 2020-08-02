@@ -1,0 +1,6 @@
+# See https://openmod.github.io/openmod-docs/development-guide/localization/
+# You can delete this file if you do not need translations
+
+PLUGIN_EVENTS:
+  OVERRIDE_START: "Overriding server lobby..."
+  OVERRIDE_STOP: "Overriding success!"
