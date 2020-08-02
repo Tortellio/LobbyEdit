@@ -8,10 +8,10 @@ namespace Tortellio.LobbyEdit
         public bool EditPlugins;
         public string[] Plugins;
         public bool IsVanilla;
-        public bool InvisibleRocket;
-        public bool HideWorkshop;
+        public bool HideRocket;
+        /*public bool HideWorkshop;
         public bool EditWorkshop;
-        public string[] Workshop;
+        public string[] Workshop;*/
         public bool HideConfig;
         public bool IsPVP;
         public bool IsBattlEyeSecure;
@@ -20,13 +20,15 @@ namespace Tortellio.LobbyEdit
         public string Perspective;
         public bool IsGold;
         public string GameMode;
+        public bool HideThumbnail;
         public bool EditThumbnail;
         public string Thumbnail;
 
         public void LoadDefaults()
         {
             IsVanilla = false;
-            InvisibleRocket = false;
+            HideRocket = false;
+            HideConfig = true;
             HidePlugins = false;
             EditPlugins = true;
             Plugins = new string[]
@@ -35,22 +37,22 @@ namespace Tortellio.LobbyEdit
                 "TPA",
                 "HOME"
             };
-            HideWorkshop = false;
+            /*HideWorkshop = false;
             EditWorkshop = true;
             Workshop = new string[]
             {
                 "0"
-            };
-            HideConfig = true;
-            IsPVP = false;
-            IsBattlEyeSecure = true;
-            Mode = "normal";
-            HasCheats = false;
-            Perspective = "both";
-            IsGold = false;
-            GameMode = "Zombie Slayer";
+            };*/
+            HideThumbnail = false;
             EditThumbnail = false;
             Thumbnail = "url.com";
+            IsPVP = false;
+            GameMode = "Zombie Slayer";
+            HasCheats = false;
+            Mode = "normal";
+            Perspective = "both";
+            IsGold = false;
+            IsBattlEyeSecure = true;
         }
     }
 }
